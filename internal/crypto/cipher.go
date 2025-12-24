@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"io"
 )
 
@@ -16,6 +17,9 @@ type Cipher struct {
 
 // NewCipher creates a new Cipher instance with the given key.
 func NewCipher(key []byte) (*Cipher, error) {
+	if l := len(key); l != 16 && l != 24 && l != 32 {
+		return nil, fmt.Errorf("invalid key length: must be 16, 24, or 32 bytes for AES")
+	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
