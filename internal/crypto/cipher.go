@@ -1,3 +1,5 @@
+// Package crypto provides cryptographic utilities for encryption and decryption,
+// including an AES-GCM based implementation for frontdex.Cipher.
 package crypto
 
 import (
@@ -9,16 +11,16 @@ import (
 	"io"
 )
 
-// Cipher provides encryption and decryption using a precomputed cipher.AEAD instance.
-type Cipher struct {
+// AESCipher provides encryption and decryption using a precomputed cipher.AEAD instance.
+type AESCipher struct {
 	key  []byte
 	aead cipher.AEAD
 }
 
-// NewCipher creates a new Cipher instance with the given key.
-func NewCipher(key []byte) (*Cipher, error) {
+// NewAESCipher creates a new Cipher instance with the given key.
+func NewAESCipher(key []byte) (*AESCipher, error) {
 	if l := len(key); l != 16 && l != 24 && l != 32 {
-		return nil, fmt.Errorf("invalid key length: must be 16, 24, or 32 bytes for AES")
+		return nil, fmt.Errorf("invalid key size: must be 16, 24, or 32 bytes")
 	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -28,14 +30,14 @@ func NewCipher(key []byte) (*Cipher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Cipher{
+	return &AESCipher{
 		key:  key,
 		aead: aead,
 	}, nil
 }
 
 // Encrypt encrypts the given data.
-func (t *Cipher) Encrypt(data []byte) ([]byte, error) {
+func (t *AESCipher) Encrypt(data []byte) ([]byte, error) {
 	nonce := make([]byte, t.aead.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil, err
@@ -45,7 +47,7 @@ func (t *Cipher) Encrypt(data []byte) ([]byte, error) {
 }
 
 // Decrypt decrypts the given data.
-func (t *Cipher) Decrypt(data []byte) ([]byte, error) {
+func (t *AESCipher) Decrypt(data []byte) ([]byte, error) {
 	nonceSize := t.aead.NonceSize()
 	if len(data) < nonceSize {
 		return nil, errors.New("data length is less than nonce size")

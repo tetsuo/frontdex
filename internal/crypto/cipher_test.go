@@ -9,7 +9,7 @@ import (
 
 func TestEncryptDecrypt(t *testing.T) {
 	key := []byte("example key 12345678901234567890") // 32 bytes
-	c, err := crypto.NewCipher(key)
+	c, err := crypto.NewAESCipher(key)
 	if err != nil {
 		t.Fatalf("Failed to create cipher: %v", err)
 	}
@@ -32,7 +32,7 @@ func TestEncryptDecrypt(t *testing.T) {
 
 func TestDecryptInvalidData(t *testing.T) {
 	key := []byte("example key 12345678901234567890")
-	c, err := crypto.NewCipher(key)
+	c, err := crypto.NewAESCipher(key)
 	if err != nil {
 		t.Fatalf("Failed to create cipher: %v", err)
 	}
@@ -57,7 +57,7 @@ func TestDecryptInvalidData(t *testing.T) {
 
 func TestEncryptDecryptEmpty(t *testing.T) {
 	key := []byte("example key 12345678901234567890")
-	c, err := crypto.NewCipher(key)
+	c, err := crypto.NewAESCipher(key)
 	if err != nil {
 		t.Fatalf("Failed to create cipher: %v", err)
 	}
@@ -82,8 +82,8 @@ func TestDifferentKeys(t *testing.T) {
 	key1 := []byte("example key 12345678901234567890")
 	key2 := []byte("different key 123456789012345678")
 
-	c1, _ := crypto.NewCipher(key1)
-	c2, _ := crypto.NewCipher(key2)
+	c1, _ := crypto.NewAESCipher(key1)
+	c2, _ := crypto.NewAESCipher(key2)
 
 	plaintext := []byte("test message")
 	ciphertext, _ := c1.Encrypt(plaintext)
