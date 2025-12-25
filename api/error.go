@@ -12,13 +12,10 @@ import (
 var (
 	// ErrResourceUnavailable is returned when the requested state is not found on Dex.
 	ErrResourceUnavailable = errors.New("requested resource does not exist")
-
 	// ErrUserSession is returned when the state parameter is missing in the callback.
 	ErrUserSession = errors.New("user session error")
-
 	// ErrAuthFailure is returned when authentication fails (e.g., code is missing or invalid).
 	ErrAuthFailure = errors.New("failed to authenticate")
-
 	// ErrInvalidConnector indicates the connector in the request is invalid or not supported.
 	ErrInvalidConnector = errors.New("connector invalid")
 )

@@ -22,49 +22,34 @@ type Connector string
 const (
 	// Atlassian Crowd connector: https://dexidp.io/docs/connectors/atlassian-crowd/
 	ConnectorAtlassianCrowd Connector = "atlassian-crowd"
-
 	// Auth Proxy connector: https://dexidp.io/docs/connectors/authproxy/
 	ConnectorAuthProxy Connector = "authproxy"
-
 	// Bitbucket Cloud connector: https://dexidp.io/docs/connectors/bitbucketcloud/
 	ConnectorBitbucketCloud Connector = "bitbucket-cloud"
-
 	// Gitea connector: https://dexidp.io/docs/connectors/gitea/
 	ConnectorGitea Connector = "gitea"
-
 	// GitHub connector: https://dexidp.io/docs/connectors/github/
 	ConnectorGitHub Connector = "github"
-
 	// GitLab connector: https://dexidp.io/docs/connectors/gitlab/
 	ConnectorGitLab Connector = "gitlab"
-
 	// Google connector: https://dexidp.io/docs/connectors/google/
 	ConnectorGoogle Connector = "google"
-
 	// Keystone connector: https://dexidp.io/docs/connectors/keystone/
 	ConnectorKeystone Connector = "keystone"
-
 	// LDAP connector: https://dexidp.io/docs/connectors/ldap/
 	ConnectorLDAP Connector = "ldap"
-
 	// LinkedIn connector: https://dexidp.io/docs/connectors/linkedin/
 	ConnectorLinkedIn Connector = "linkedin"
-
 	// Microsoft connector: https://dexidp.io/docs/connectors/microsoft/
 	ConnectorMicrosoft Connector = "microsoft"
-
 	// Mock connector (for testing or development)
 	ConnectorMock Connector = "mock"
-
 	// OAuth connector: https://dexidp.io/docs/connectors/oauth/
 	ConnectorOAuth Connector = "oauth"
-
 	// OpenID Connect (OIDC) connector: https://dexidp.io/docs/connectors/oidc/
 	ConnectorOpenIDConnect Connector = "oidc"
-
 	// OpenShift connector: https://dexidp.io/docs/connectors/openshift/
 	ConnectorOpenShift Connector = "openshift"
-
 	// SAML connector: https://dexidp.io/docs/connectors/saml/
 	ConnectorSAML Connector = "saml"
 )
