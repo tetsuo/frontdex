@@ -1,5 +1,4 @@
-// Package crypto provides cryptographic utilities for encryption and decryption,
-// including an AES-GCM based implementation for frontdex.Cipher.
+// Package crypto provides an AES-GCM based implementation for frontdex.Crypto.
 package crypto
 
 import (

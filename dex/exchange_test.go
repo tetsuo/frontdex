@@ -1,11 +1,11 @@
-package api_test
+package dex_test
 
 import (
 	"context"
 	"net/http"
 	"testing"
 
-	"github.com/tetsuo/frontdex/api"
+	"github.com/tetsuo/frontdex/dex"
 )
 
 // Test that ExchangeCodeForToken validates parameters
@@ -27,15 +27,15 @@ func TestExchangeErrorInvalidCode(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	exchangeReq := &api.ExchangeRequest{
+	exchangeReq := &dex.ExchangeRequest{
 		Verifier: []byte("test-verifier"),
 		Code:     "invalid-code",
 	}
 
-	_, err := dex.ExchangeCodeForToken(ctx, exchangeReq)
+	_, err := client.ExchangeCodeForToken(ctx, exchangeReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}

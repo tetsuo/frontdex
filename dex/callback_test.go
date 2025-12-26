@@ -1,4 +1,4 @@
-package api_test
+package dex_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/tetsuo/frontdex/api"
+	"github.com/tetsuo/frontdex/dex"
 )
 
 // Test helper functions for callback
@@ -50,15 +50,15 @@ func TestCallbackSuccess(t *testing.T) {
 	mockDexServer := createMockDexServer(mockSuccessCallback)
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	callbackReq := &api.CallbackRequest{
+	callbackReq := &dex.CallbackRequest{
 		RawQuery: "?state=user-provided-state&code=auth-code",
 		ClientIP: "192.168.1.1",
 	}
 
-	state, code, err := dex.Callback(ctx, callbackReq)
+	state, code, err := client.Callback(ctx, callbackReq)
 	if err != nil {
 		t.Fatalf("Callback failed: %v", err)
 	}
@@ -84,15 +84,15 @@ func TestCallbackSuccessWithClientIP(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	callbackReq := &api.CallbackRequest{
+	callbackReq := &dex.CallbackRequest{
 		RawQuery: "?state=user-provided-state&code=auth-code",
 		ClientIP: "10.0.0.5",
 	}
 
-	_, _, err := dex.Callback(ctx, callbackReq)
+	_, _, err := client.Callback(ctx, callbackReq)
 	if err != nil {
 		t.Fatalf("Callback failed: %v", err)
 	}
@@ -126,14 +126,14 @@ func TestCallbackErrorWrongRedirectURL(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	callbackReq := &api.CallbackRequest{
+	callbackReq := &dex.CallbackRequest{
 		RawQuery: "?state=user-state&code=auth-code",
 	}
 
-	_, _, err := dex.Callback(ctx, callbackReq)
+	_, _, err := client.Callback(ctx, callbackReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}
@@ -151,14 +151,14 @@ func TestCallbackErrorMissingLocationHeader(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	callbackReq := &api.CallbackRequest{
+	callbackReq := &dex.CallbackRequest{
 		RawQuery: "?state=user-state&code=auth-code",
 	}
 
-	_, _, err := dex.Callback(ctx, callbackReq)
+	_, _, err := client.Callback(ctx, callbackReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}
@@ -173,14 +173,14 @@ func TestCallbackErrorBadRequestHTML(t *testing.T) {
 	mockDexServer := createMockDexServer(mockCallbackErrorHTML)
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	callbackReq := &api.CallbackRequest{
+	callbackReq := &dex.CallbackRequest{
 		RawQuery: "?state=invalid-state",
 	}
 
-	_, _, err := dex.Callback(ctx, callbackReq)
+	_, _, err := client.Callback(ctx, callbackReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}
@@ -210,14 +210,14 @@ func TestCallbackErrorInternalServerHTML(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	callbackReq := &api.CallbackRequest{
+	callbackReq := &dex.CallbackRequest{
 		RawQuery: "?state=user-state&code=auth-code",
 	}
 
-	_, _, err := dex.Callback(ctx, callbackReq)
+	_, _, err := client.Callback(ctx, callbackReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}
@@ -235,14 +235,14 @@ func TestCallbackErrorUnexpectedStatusCode(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	callbackReq := &api.CallbackRequest{
+	callbackReq := &dex.CallbackRequest{
 		RawQuery: "?state=user-state&code=auth-code",
 	}
 
-	_, _, err := dex.Callback(ctx, callbackReq)
+	_, _, err := client.Callback(ctx, callbackReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}
@@ -269,14 +269,14 @@ func TestCallbackErrorNoHTMLErrorInfo(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	callbackReq := &api.CallbackRequest{
+	callbackReq := &dex.CallbackRequest{
 		RawQuery: "?state=user-state&code=auth-code",
 	}
 
-	_, _, err := dex.Callback(ctx, callbackReq)
+	_, _, err := client.Callback(ctx, callbackReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}

@@ -1,6 +1,6 @@
 // Package api provides utilities for interacting with the Dex OAuth2/OIDC provider,
 // including login, callback, token exchange, and health check operations.
-package api
+package dex
 
 import (
 	"context"

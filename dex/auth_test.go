@@ -1,4 +1,4 @@
-package api_test
+package dex_test
 
 import (
 	"context"
@@ -9,13 +9,13 @@ import (
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/tetsuo/frontdex/api"
+	"github.com/tetsuo/frontdex/dex"
 	"golang.org/x/oauth2"
 )
 
 // Test helper functions
 
-func setupTestDex(t *testing.T, serverURL string) *api.Dex {
+func setupTestDex(t *testing.T, serverURL string) *dex.Dex {
 	t.Helper()
 	ctx := context.Background()
 
@@ -38,7 +38,7 @@ func setupTestDex(t *testing.T, serverURL string) *api.Dex {
 		},
 	}
 
-	dex, err := api.NewDex(http.DefaultTransport, oauth2cfg, provider, "", time.Second*10)
+	dex, err := dex.NewDex(http.DefaultTransport, oauth2cfg, provider, "", time.Second*10)
 	if err != nil {
 		t.Fatalf("NewDex failed: %v", err)
 	}
@@ -115,18 +115,18 @@ func TestPerformAuthRedirectGoogle(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	authReq := &api.AuthRequest{
+	authReq := &dex.AuthRequest{
 		State:         "test-state-12345",
 		Nonce:         "test-nonce-67890",
 		CodeChallenge: "test-code-challenge",
-		Via:           api.ConnectorGoogle,
+		Via:           dex.ConnectorGoogle,
 		ClientIP:      "192.168.1.1",
 	}
 
-	redirectURL, err := dex.GetAuthorizationURL(ctx, authReq)
+	redirectURL, err := client.GetAuthorizationURL(ctx, authReq)
 	if err != nil {
 		t.Fatalf("PerformAuthRedirect failed: %v", err)
 	}
@@ -197,17 +197,17 @@ func TestPerformAuthRedirectGitHub(t *testing.T) {
 	mockDexServer := createMockDexServer(mockSuccessGitHub)
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	authReq := &api.AuthRequest{
+	authReq := &dex.AuthRequest{
 		State:         "test-state-12345",
 		Nonce:         "test-nonce-67890",
 		CodeChallenge: "test-code-challenge",
-		Via:           api.ConnectorGitHub,
+		Via:           dex.ConnectorGitHub,
 	}
 
-	redirectURL, err := dex.GetAuthorizationURL(ctx, authReq)
+	redirectURL, err := client.GetAuthorizationURL(ctx, authReq)
 	if err != nil {
 		t.Fatalf("PerformAuthRedirect failed: %v", err)
 	}
@@ -232,17 +232,17 @@ func TestPerformAuthRedirectErrorMissingResponseType(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	authReq := &api.AuthRequest{
+	authReq := &dex.AuthRequest{
 		State:         "test-state",
 		Nonce:         "test-nonce",
 		CodeChallenge: "test-challenge",
-		Via:           api.ConnectorGoogle,
+		Via:           dex.ConnectorGoogle,
 	}
 
-	_, err := dex.GetAuthorizationURL(ctx, authReq)
+	_, err := client.GetAuthorizationURL(ctx, authReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}
@@ -259,17 +259,17 @@ func TestPerformAuthRedirectErrorInvalidScope(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	authReq := &api.AuthRequest{
+	authReq := &dex.AuthRequest{
 		State:         "test-state",
 		Nonce:         "test-nonce",
 		CodeChallenge: "test-challenge",
-		Via:           api.ConnectorGoogle,
+		Via:           dex.ConnectorGoogle,
 	}
 
-	_, err := dex.GetAuthorizationURL(ctx, authReq)
+	_, err := client.GetAuthorizationURL(ctx, authReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}
@@ -286,17 +286,17 @@ func TestPerformAuthRedirectErrorInvalidCodeChallengeMethod(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	authReq := &api.AuthRequest{
+	authReq := &dex.AuthRequest{
 		State:         "test-state",
 		Nonce:         "test-nonce",
 		CodeChallenge: "test-challenge",
-		Via:           api.ConnectorGoogle,
+		Via:           dex.ConnectorGoogle,
 	}
 
-	_, err := dex.GetAuthorizationURL(ctx, authReq)
+	_, err := client.GetAuthorizationURL(ctx, authReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}
@@ -314,17 +314,17 @@ func TestPerformAuthRedirectErrorNotFound(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	authReq := &api.AuthRequest{
+	authReq := &dex.AuthRequest{
 		State:         "test-state",
 		Nonce:         "test-nonce",
 		CodeChallenge: "test-challenge",
-		Via:           api.ConnectorGoogle,
+		Via:           dex.ConnectorGoogle,
 	}
 
-	_, err := dex.GetAuthorizationURL(ctx, authReq)
+	_, err := client.GetAuthorizationURL(ctx, authReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}
@@ -343,17 +343,17 @@ func TestPerformAuthRedirectErrorMissingLocationHeader(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	authReq := &api.AuthRequest{
+	authReq := &dex.AuthRequest{
 		State:         "test-state",
 		Nonce:         "test-nonce",
 		CodeChallenge: "test-challenge",
-		Via:           api.ConnectorGoogle,
+		Via:           dex.ConnectorGoogle,
 	}
 
-	_, err := dex.GetAuthorizationURL(ctx, authReq)
+	_, err := client.GetAuthorizationURL(ctx, authReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}
@@ -372,17 +372,17 @@ func TestPerformAuthRedirectErrorUnexpectedStatusCode(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	authReq := &api.AuthRequest{
+	authReq := &dex.AuthRequest{
 		State:         "test-state",
 		Nonce:         "test-nonce",
 		CodeChallenge: "test-challenge",
-		Via:           api.ConnectorGoogle,
+		Via:           dex.ConnectorGoogle,
 	}
 
-	_, err := dex.GetAuthorizationURL(ctx, authReq)
+	_, err := client.GetAuthorizationURL(ctx, authReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}
@@ -406,17 +406,17 @@ func TestPerformAuthRedirectError303WithoutErrorParams(t *testing.T) {
 	})
 	defer mockDexServer.Close()
 
-	dex := setupTestDex(t, mockDexServer.URL)
+	client := setupTestDex(t, mockDexServer.URL)
 	ctx := context.Background()
 
-	authReq := &api.AuthRequest{
+	authReq := &dex.AuthRequest{
 		State:         "test-state",
 		Nonce:         "test-nonce",
 		CodeChallenge: "test-challenge",
-		Via:           api.ConnectorGoogle,
+		Via:           dex.ConnectorGoogle,
 	}
 
-	_, err := dex.GetAuthorizationURL(ctx, authReq)
+	_, err := client.GetAuthorizationURL(ctx, authReq)
 	if err == nil {
 		t.Fatal("expected error but got none")
 	}
