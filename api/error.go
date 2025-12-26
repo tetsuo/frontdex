@@ -20,6 +20,13 @@ var (
 	ErrInvalidConnector = errors.New("connector invalid")
 )
 
+var (
+	// ErrTimeout is returned when the request takes too long.
+	ErrTimeout = errors.New("timeout")
+	// ErrNetwork is returned when a URL cannot be reached.
+	ErrNetwork = errors.New("network error")
+)
+
 func parseErrorFromLocation(locationURL string) error {
 	u, err := url.Parse(locationURL)
 	if err != nil {

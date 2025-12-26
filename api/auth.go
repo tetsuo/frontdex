@@ -2,8 +2,11 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
+	"net/url"
 
 	"golang.org/x/net/html"
 	"golang.org/x/oauth2"
@@ -50,6 +53,13 @@ func (dex *Dex) GetAuthorizationURL(ctx context.Context, params *AuthRequest) (s
 
 	res, err := dex.c.Do(req)
 	if err != nil {
+		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			return "", ErrTimeout
+		}
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			return "", fmt.Errorf("%w: %v", ErrNetwork, urlErr.Err)
+		}
 		return "", err
 	}
 	defer res.Body.Close()

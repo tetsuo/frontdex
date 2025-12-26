@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/tetsuo/frontdex/api"
@@ -37,7 +38,7 @@ func setupTestDex(t *testing.T, serverURL string) *api.Dex {
 		},
 	}
 
-	dex, err := api.NewDex(http.DefaultTransport, oauth2cfg, provider, "")
+	dex, err := api.NewDex(http.DefaultTransport, oauth2cfg, provider, "", time.Second*10)
 	if err != nil {
 		t.Fatalf("NewDex failed: %v", err)
 	}

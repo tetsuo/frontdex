@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 
@@ -29,6 +31,13 @@ func (dex *Dex) Callback(ctx context.Context, params *CallbackRequest) (string, 
 
 	res, err := dex.c.Do(req)
 	if err != nil {
+		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			return "", "", ErrTimeout
+		}
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			return "", "", fmt.Errorf("%w: %v", ErrNetwork, urlErr.Err)
+		}
 		return "", "", err
 	}
 	defer res.Body.Close()

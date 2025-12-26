@@ -4,7 +4,9 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"path"
@@ -71,6 +73,7 @@ func NewDex(
 	oauth2cfg *oauth2.Config,
 	provider *oidc.Provider,
 	clientIPHeader string,
+	timeout time.Duration,
 ) (*Dex, error) {
 	u, err := url.Parse(oauth2cfg.Endpoint.AuthURL)
 	if err != nil {
@@ -93,7 +96,7 @@ func NewDex(
 
 	c := &http.Client{
 		Transport: rt,
-		Timeout:   time.Second * 30,
+		Timeout:   timeout,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			// Allow redirects to auth URL only.
 			if req.URL.Host == authURLHost && strings.HasPrefix(req.URL.Path, authURLPath) {
@@ -143,6 +146,13 @@ func (dex *Dex) Health(ctx context.Context) error {
 	}
 	res, err := dex.c.Do(req)
 	if err != nil {
+		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			return ErrTimeout
+		}
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			return fmt.Errorf("%w: %v", ErrNetwork, urlErr.Err)
+		}
 		return err
 	}
 	defer res.Body.Close()
