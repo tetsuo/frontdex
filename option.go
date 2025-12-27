@@ -24,11 +24,11 @@ type Option func(*frontdex)
 
 // Dex/OIDC options.
 
-// WithEndpoint sets the base URL for the Dex server and configures the OAuth2 endpoints
+// WithEndpointURL sets the base URL for the Dex server and configures the OAuth2 endpoints
 // (auth, token), JWKS (keys), and userinfo URLs accordingly. Note that frontdex doesn't use
 // the discovery protocol to obtain these URLs.
 // Defaults to the development endpoint (http://localhost:5556).
-func WithEndpoint(endpoint string) Option {
+func WithEndpointURL(endpoint string) Option {
 	return func(fdx *frontdex) {
 		fdx.opts.OAuth2Config.Endpoint = oauth2.Endpoint{
 			TokenURL: endpoint + "/token",
@@ -39,18 +39,18 @@ func WithEndpoint(endpoint string) Option {
 	}
 }
 
-// WithRedirectURL sets the OAuth2 redirect URL used for callbacks.
+// WithOAuthRedirectURL sets the OAuth2 redirect URL used for callbacks.
 // Must match with connector redirect URI configuration in Dex.
 // Defaults to issuerURL + "/callback".
-func WithRedirectURL(redirectURL string) Option {
+func WithOAuthRedirectURL(redirectURL string) Option {
 	return func(fdx *frontdex) {
 		fdx.opts.OAuth2Config.RedirectURL = redirectURL
 	}
 }
 
-// WithScopes sets the OAuth scopes requested from Dex during login.
+// WithOAuthScopes sets the OAuth scopes requested from Dex during login.
 // Default: openid, profile, email, federated:id.
-func WithScopes(scopes []string) Option {
+func WithOAuthScopes(scopes []string) Option {
 	return func(fdx *frontdex) {
 		fdx.opts.OAuth2Config.Scopes = scopes
 	}
@@ -390,12 +390,12 @@ func applyDefaults(issuerURL *url.URL, fdx *frontdex) {
 func ensureDefaults(issuerURL *url.URL, fdx *frontdex) {
 	// JWKSURL is empty if the Dex endpoint is not set; set it to localhost.
 	if fdx.opts.ProviderConfig.JWKSURL == "" {
-		WithEndpoint(dexEndpoint + issuerURL.Path)(fdx)
+		WithEndpointURL(dexEndpoint + issuerURL.Path)(fdx)
 	}
 
 	// Default scopes
 	if len(fdx.opts.OAuth2Config.Scopes) == 0 {
-		WithScopes([]string{oidc.ScopeOpenID, "profile", "email", "federated:id"})(fdx)
+		WithOAuthScopes([]string{oidc.ScopeOpenID, "profile", "email", "federated:id"})(fdx)
 	}
 
 	// Use the issuerURL and the callback path to construct the redirect URL if unset.
@@ -405,7 +405,7 @@ func ensureDefaults(issuerURL *url.URL, fdx *frontdex) {
 			Host:   issuerURL.Host,
 			Path:   path.Join(issuerURL.Path, callbackPath[1:]),
 		}
-		WithRedirectURL(redirectURL.String())(fdx)
+		WithOAuthRedirectURL(redirectURL.String())(fdx)
 	}
 
 	// Default lifetimes: both are 24h as per Dex defaults

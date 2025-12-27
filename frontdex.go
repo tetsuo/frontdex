@@ -50,7 +50,7 @@ const (
 	// stateCookieName sets the default state token cookie name.
 	stateCookieName string = "_fdx.state"
 
-	// connectorFieldName sets the query/form field name for the connector ID.
+	// connectorFieldName sets the default query/form field name for the connector ID.
 	connectorFieldName string = "via"
 
 	// clientTimeout sets the default HTTP client timeout value for Dex requests.
