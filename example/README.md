@@ -16,7 +16,7 @@ docker run \
   dex serve /etc/dex/config.yaml
 ```
 
-ℹ️ Make sure to update the OAuth2 client IDs and secrets in Dex. The provided `dex.yaml` contains placeholders—replace them with your actual credentials.
+Make sure to update the OAuth2 client IDs and secrets in `dex.yaml` before running Dex.
 
 Run the example app:
 
