@@ -32,7 +32,7 @@ func (fdx *frontdex) handleRedirect(r *http.Request) (string, []byte, error) {
 		State:         string(token[:stateEnd]),
 		Nonce:         string(token[stateEnd:nonceEnd]),
 		CodeChallenge: codeChallenge,
-		ClientIP:      fdx.opts.RealIP.FromRequest(r),
+		ClientIP:      fdx.clientIP(r),
 		Via:           via,
 	}
 

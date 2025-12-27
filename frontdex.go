@@ -6,12 +6,13 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"net"
 	"net/http"
+	"net/netip"
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/tetsuo/frontdex/dex"
-	"github.com/tetsuo/realip"
 	"golang.org/x/oauth2"
 )
 
@@ -85,8 +86,10 @@ type options struct {
 	CookieFactory *cookieFactory
 	// StateSecret sets the secret key for encrypting state tokens.
 	StateSecret []byte
-	// RealIP extracts client IP addresses.
-	RealIP *realip.RealIP
+	// TrustedPeerCIDRs defines which IP ranges are allowed to send proxy headers.
+	// If empty, proxy headers are never trusted.
+	// Only requests from these IPs will have their "X-Forwarded-For" headers parsed.
+	TrustedPeerCIDRs []netip.Prefix
 	// TokenTTL specifies the auth token lifetime.
 	// Should match with ID token lifetime on Dex. Defaults to 24h.
 	TokenTTL time.Duration
@@ -254,6 +257,37 @@ func (fdx *frontdex) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fdx.h.ServeHTTP(w, r)
+}
+
+func (fdx *frontdex) clientIP(r *http.Request) string {
+	remoteAddr, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return ""
+	}
+
+	remoteIP, err := netip.ParseAddr(remoteAddr)
+	if err != nil {
+		return ""
+	}
+
+	// Check if the request comes from a trusted peer
+	for _, n := range fdx.opts.TrustedPeerCIDRs {
+		if !n.Contains(remoteIP) {
+			return remoteAddr // Fallback to the address from the request if the header is provided
+		}
+	}
+
+	// Try to get a single IP from X-Forwarded-For header; if multiple comma-separated IPs are
+	// present, this won't parse it. In that case, we fallback to the remote address.
+	ipVal := r.Header.Get("X-Forwarded-For")
+	if ipVal != "" {
+		ip, err := netip.ParseAddr(ipVal)
+		if err == nil {
+			return ip.String()
+		}
+	}
+
+	return remoteAddr
 }
 
 func contextGet[A any](r *http.Request, key contextKey) (a A) {

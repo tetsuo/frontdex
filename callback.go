@@ -34,7 +34,7 @@ func (fdx *frontdex) handleCallback(r *http.Request) (*dex.Payload, error) {
 	// Exchange callback params.
 	callbackReq := &dex.CallbackRequest{
 		RawQuery: r.URL.RawQuery,
-		ClientIP: fdx.opts.RealIP.FromRequest(r),
+		ClientIP: fdx.clientIP(r),
 	}
 
 	state, code, err := fdx.dex.Callback(r.Context(), callbackReq)

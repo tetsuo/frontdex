@@ -15,7 +15,6 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/tetsuo/frontdex/dex"
 	"github.com/tetsuo/frontdex/internal/crypto"
-	"github.com/tetsuo/realip"
 	"golang.org/x/oauth2"
 )
 
@@ -198,48 +197,29 @@ func WithCustomCrypto(cyp Crypto) Option {
 	}
 }
 
-// Forwarded header options.
+// Proxy header options.
 
-// WithRealIPHeaders sets the list of headers to inspect when determining the client IP address
-// to send to Dex (using the header specified with [WithClientRemoteIPHeader]).
-// By default, frontdex ignores forwarded headers from untrusted sources. For security, ensure
-// only trusted peers or proxies can set these headers using [WithRealIPTrustedProxies], [WithRealIPTrustedPeers],
-// or [WithRealIPProxyHopCount]. The default is ["X-Forwarded-For"].
-func WithRealIPHeaders(headers []string) Option {
+// WithTrustedPeerCIDRs sets the IP ranges that are allowed to send proxy headers.
+//
+// This option is REQUIRED to accept "X-Forwarded-For" headers and forward them to Dex.
+// Only requests where RemoteAddr matches one of these CIDRs will have their headers
+// forwarded. This should be set to the IP range of your load balancer in your trusted
+// network.
+//
+// Note that proxy header parsing is complex and out of scope for this library.
+// frontdex only provides basic support for obtaining a single client IP from the
+// "X-Forwarded-For" header, ignoring comma-separated IPs.
+//
+// Example: For a load balancer at 10.0.0.0/24:
+//
+//	frontdex.New(issuerURL, clientID, clientSecret,
+//	    frontdex.WithTrustedPeerCIDRs([]netip.Prefix{
+//	        netip.MustParsePrefix("10.0.0.0/24"),
+//	    }),
+//	)
+func WithTrustedPeerCIDRs(cidrs []netip.Prefix) Option {
 	return func(fdx *frontdex) {
-		opt := realip.WithHeaders(headers)
-		opt(fdx.opts.RealIP)
-	}
-}
-
-// WithRealIPTrustedProxies sets trusted proxy IP prefixes used for determining the client IP address.
-// This defines which IP ranges are allowed to set forwarding headers.
-// When set, forwarded headers are only checked if the request comes from a trusted peer.
-// Otherwise, the remote address is returned.
-func WithRealIPTrustedProxies(proxies []netip.Prefix) Option {
-	return func(fdx *frontdex) {
-		opt := realip.WithTrustedProxies(proxies)
-		opt(fdx.opts.RealIP)
-	}
-}
-
-// WithRealIPTrustedPeers sets trusted peer IP prefixes used for determining the client IP address.
-// Use it to specify IP ranges of internal proxies that should be skipped when parsing
-// the forwarding chain.
-func WithRealIPTrustedPeers(peers []netip.Prefix) Option {
-	return func(fdx *frontdex) {
-		opt := realip.WithTrustedPeers(peers)
-		opt(fdx.opts.RealIP)
-	}
-}
-
-// WithRealIPProxyHopCount sets how many proxy hops to trust when determining the client IP address.
-// Sets the exact number of proxy hops to skip from the end of the forwarding chain.
-// If you know there are exactly N proxies in your chain, use this setting to skip them.
-func WithRealIPProxyHopCount(cnt int) Option {
-	return func(fdx *frontdex) {
-		opt := realip.WithProxyCnt(cnt)
-		opt(fdx.opts.RealIP)
+		fdx.opts.TrustedPeerCIDRs = cidrs
 	}
 }
 
@@ -376,10 +356,6 @@ func applyDefaults(issuerURL *url.URL, fdx *frontdex) {
 			HttpOnly: true,
 			SameSite: SameSiteLaxMode,
 		},
-		RealIP: realip.New(
-			// Default xff header is "X-Forwarded-For"
-			realip.WithHeaders([]string{realip.XForwardedFor}),
-		),
 		Connectors:    make(map[Connector]struct{}),
 		Transport:     http.DefaultTransport,
 		ClientTimeout: clientTimeout,
