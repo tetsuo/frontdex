@@ -1,0 +1,49 @@
+# The URL where your app is reachable, not Dex itself
+issuer: http://localhost:8080/login
+
+# See https://dexidp.io/docs/storage/ for other storage options
+storage:
+  type: memory
+
+web:
+  http: 0.0.0.0:5556 # Dex will listen on this port
+  clientRemoteIP:
+    header: X-Forwarded-For # frontdex sets this header
+
+oauth2:
+  grantTypes:
+    - "authorization_code"
+  responseTypes: [ "code" ]
+  skipApprovalScreen: true # must be set
+
+staticClients:
+- id: example-client
+  redirectURIs:
+  - 'http://localhost:8080/login/callback'
+  name: 'Example client'
+  secret: change-me-in-production
+
+# See https://dexidp.io/docs/connectors/ for other connectors
+connectors:
+- type: github
+  id: github
+  name: GitHub
+  config:
+    clientID: XXXXXXYYYYZZZZAAAABBBBCCCCDDDD
+    clientSecret: XXXXXXYYYYZZZZAAAABBBBCCCCDDDD
+    redirectURI: http://localhost:8080/login/callback
+- type: google
+  id: google
+  name: Google
+  config:
+    clientID: XXXXXXYYYYZZZZAAAABBBBCCCCDDDD
+    clientSecret: XXXXXXYYYYZZZZAAAABBBBCCCCDDDD
+    redirectURI: http://localhost:8080/login/callback
+    promptType: consent
+- type: mockCallback # for testing without external IdP
+  id: mock
+  name: Mock
+
+logger:
+  level: "debug"
+  format: "text"
