@@ -257,7 +257,10 @@ func (fdx *frontdex) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func contextGet[A any](r *http.Request, key contextKey) (a A) {
-	return r.Context().Value(key).(A)
+	if v := r.Context().Value(key); v != nil {
+		return v.(A)
+	}
+	return
 }
 
 func contextSave[A any](r *http.Request, key contextKey, val A) *http.Request {
