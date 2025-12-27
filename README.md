@@ -1,10 +1,15 @@
 # frontdex
 
+OAuth2/OpenID Connect middleware for Go that fronts [Dex](https://dexidp.io/)
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/tetsuo/frontdex.svg)](https://pkg.go.dev/github.com/tetsuo/frontdex)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tetsuo/frontdex)](https://goreportcard.com/report/github.com/tetsuo/frontdex)
+
 frontdex provides authentication middleware that integrates with [Dex](https://dexidp.io/), an open-source OpenID Connect (OIDC) and OAuth 2.0 identity provider capable of authenticating users via various backends such as GitHub, Google, Microsoft, or LDAP.
 
 Typically, applications either redirect users directly to Dex for login or place it behind a reverse proxy to control requests before they reach Dex (for example, as in [Argo CD](https://github.com/argoproj/argo-cd/blob/5cce5fe59b6350e4f4ad1971b6bf2fa925a1f792/util/dex/dex.go#L61)).
 
-frontdex is intended for scenarios where you want to completely hide Dex from end users. It handles the Authorization Code flow (with PKCE) on behalf of your application and stores a payload in the request context containing tokens and user info for further processing.
+frontdex is intended for scenarios where you want to completely hide Dex from end users. It handles the [Authorization Code flow](https://oauth.net/2/grant-types/authorization-code/) (with [PKCE](https://oauth.net/2/pkce/)) on behalf of your application and stores a payload in the request context containing tokens and user info for further processing.
 
 ## Quickstart
 
