@@ -69,7 +69,8 @@ Start Dex with Docker:
 docker run \
   --name dex \
   -p 5556:5556 \
-  --rm -v ./dex.yaml:/etc/dex/config.yaml \
+  -v ./dex.yaml:/etc/dex/config.yaml \
+  --rm \
   dexidp/dex:latest \
   dex serve /etc/dex/config.yaml
 ```
@@ -86,8 +87,7 @@ By default, frontdex fronts the Dex instance running at `localhost:5556`. You ca
 
 > 📄 **See the API documentation at [pkg.go.dev](https://pkg.go.dev/github.com/tetsuo/frontdex) for all available options.**
 
-
-There aren't many options to configure to test it out locally:
+There aren't many options to configure to test it out locally. Here's a minimal example app:
 
 ```go
 package main

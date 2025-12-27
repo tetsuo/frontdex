@@ -48,7 +48,7 @@ func WithOAuthRedirectURL(redirectURL string) Option {
 	}
 }
 
-// WithOAuthScopes sets the OAuth scopes requested from Dex during login.
+// WithOAuthScopes sets the OAuth2 scopes requested from Dex during login.
 // Default: openid, profile, email, federated:id.
 func WithOAuthScopes(scopes []string) Option {
 	return func(fdx *frontdex) {
@@ -162,7 +162,7 @@ func WithCookieTrustedOrigins(origins []string) Option {
 }
 
 // WithStateSecret specifies the key used by the built-in AES cipher to encrypt and decrypt
-// state token values. The key must be 16, 24, or 32 bytes long; if not set, a random 32-byte key
+// state tokens. The key must be 16, 24, or 32 bytes long; if not set, a random 32-byte key
 // is used by default.
 func WithStateSecret(key []byte) Option {
 	return func(fdx *frontdex) {
@@ -189,7 +189,7 @@ func WithStateSecretHex(hexKey string) Option {
 }
 
 // WithCustomCrypto injects a custom [Crypto] implementation for encrypting and decrypting
-// state token values. By default AES is used with a random 32-byte key.
+// state tokens. By default AES is used with a random 32-byte key.
 // Setting a custom [Crypto] overrides any state secret set via [WithStateSecret]
 // or [WithStateSecretHex].
 func WithCustomCrypto(cyp Crypto) Option {

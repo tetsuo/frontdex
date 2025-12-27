@@ -1,5 +1,5 @@
-// Package api provides utilities for interacting with the Dex OAuth2/OIDC provider,
-// including login, callback, token exchange, and health check operations.
+// Package dex provides an HTTP client for interacting with the Dex OAuth2/OIDC provider
+// to perform the Authorization Code flow.
 package dex
 
 import (
