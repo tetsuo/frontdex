@@ -502,7 +502,7 @@ func ensureDefaults(issuerURL *url.URL, fdx *frontdex) {
 		}
 		fdx.opts.LoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			io.WriteString(w, htmlStr.String())
+			io.WriteString(w, htmlStr.String()) //nolint:errcheck
 		})
 		fmt.Fprintf(&htmlStr, `</form>
   </body>
