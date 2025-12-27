@@ -4,7 +4,7 @@
 
 ## How to run
 
-Start Dex and the example app as follows:
+Start Dex:
 
 ```sh
 docker run \
@@ -16,7 +16,7 @@ docker run \
   dex serve /etc/dex/config.yaml
 ```
 
-Make sure to update the OAuth2 client IDs and secrets in Dex. The provided `dex.yaml` contains placeholders—replace them with your actual credentials.
+ℹ️ Make sure to update the OAuth2 client IDs and secrets in Dex. The provided `dex.yaml` contains placeholders—replace them with your actual credentials.
 
 Run the example app:
 

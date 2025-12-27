@@ -37,11 +37,11 @@ oauth2:
   skipApprovalScreen: true # must be set
 
 staticClients:
-- id: example-client # Note this client ID
+- id: example-client
   redirectURIs:
   - 'http://localhost:8080/login/callback'
   name: 'Example client'
-  secret: change-me-in-production # Note this, too
+  secret: change-me-in-production
 
 # See https://dexidp.io/docs/connectors/ for other connectors
 connectors:
