@@ -31,20 +31,6 @@ func (fdx *frontdex) handleCallback(r *http.Request) (*dex.Payload, error) {
 		return nil, ErrBadError
 	}
 
-	// Exchange callback params.
-	callbackReq := &dex.CallbackRequest{
-		RawQuery: r.URL.RawQuery,
-		ClientIP: fdx.clientIP(r),
-	}
-
-	state, code, err := fdx.dex.Callback(r.Context(), callbackReq)
-	if err != nil {
-		// State missing: ErrUserSession
-		// Provided state does not resolve to a resource: ErrResourceUnavailable
-		// Bad verification code: ErrAuthFailure
-		return nil, err
-	}
-
 	// Validate and decrypt the token from the cookie.
 	cookie, err := r.Cookie(fdx.opts.CookieFactory.CookieName)
 	if err != nil {
@@ -53,6 +39,10 @@ func (fdx *frontdex) handleCallback(r *http.Request) (*dex.Payload, error) {
 
 	if err := cookie.Valid(); err != nil {
 		return nil, fmt.Errorf("%w: cookie: %v", ErrBadStateToken, err)
+	}
+
+	if cookie.Value == "" {
+		return nil, ErrMissingStateToken
 	}
 
 	ciphertext, err := base64.RawURLEncoding.DecodeString(cookie.Value)
@@ -67,6 +57,20 @@ func (fdx *frontdex) handleCallback(r *http.Request) (*dex.Payload, error) {
 
 	if len(secret) < verifierEnd {
 		return nil, fmt.Errorf("invalid state token length: want %d, got %d", verifierEnd, len(secret))
+	}
+
+	// Exchange callback params.
+	callbackReq := &dex.CallbackRequest{
+		RawQuery: r.URL.RawQuery,
+		ClientIP: fdx.clientIP(r),
+	}
+
+	state, code, err := fdx.dex.Callback(r.Context(), callbackReq)
+	if err != nil {
+		// State missing: ErrUserSession
+		// Provided state does not resolve to a resource: ErrResourceUnavailable
+		// Bad verification code: ErrAuthFailure
+		return nil, err
 	}
 
 	// Ensure state values match.
