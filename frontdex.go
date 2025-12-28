@@ -386,7 +386,6 @@ var (
 	// ErrorHandler sends an appropriate HTTP error response based on the failure reason.
 	// Used when an error occurs during the authentication process. Override with [WithErrorHandler].
 	ErrorHandler = http.HandlerFunc(errorHandler)
-
 	// RedirectHandler sets the state token cookie and redirects to the authorization URL.
 	// Used to initiate the authentication process. Override with [WithRedirectHandler].
 	RedirectHandler = http.HandlerFunc(redirectHandler)
