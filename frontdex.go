@@ -1,5 +1,5 @@
 // Package frontdex provides OAuth2/OIDC authentication middleware that integrates
-// with Dex to handle the authorization code flow.
+// with Dex and handles the authorization code flow.
 package frontdex
 
 import (
@@ -187,23 +187,31 @@ func (cf *cookieFactory) newCookie(b []byte) *http.Cookie {
 	}
 }
 
-// New creates an [http.Handler] that performs OAuth2/OIDC authentication using Dex
-// as the identity provider. It intercepts requests to / and /callback paths to handle redirect
-// and callback flows, respectively. Other requests are passed to the provided handler h.
-// You should ideally mount this under a specific path, e.g., /login/.
+// New returns an [http.Handler] that provides OAuth2/OIDC authentication using Dex as
+// the identity provider. It intercepts requests to / and /callback to handle the authorization
+// and callback flows, respectively. All other requests are passed to the provided handler h.
+// You should mount this handler under a dedicated path, such as /login/.
 //
-// The issuerURL, clientID, and clientSecret parameters are used to configure the OAuth2 client
-// and must match the values registered in the Dex server. Additional options and a Dex
-// endpoint URL can be provided after the required parameters.
+// The issuerURL, clientID, and clientSecret parameters configure the OAuth2 client and must match
+// the values registered with your Dex server. Additional options, such as a custom Dex endpoint URL,
+// can be provided using functional options.
 //
-// Upon successful authentication, the handler stores the authentication payload in the request
-// context, which can be retrieved using the [Payload] function. A payload is only present
-// in GET /callback requests after successful authentication.
+// Note: set issuerURL to your application (for example, https://example.com/login), not to to Dex.
+// Dex uses the issuer URL to validate redirect URIs, but its discovery document (/.well-known/openid-configuration)
+// will advertise /keys, /token, and other endpoints under your application's URL. If your application
+// tried to call those endpoints, it would end up calling itself.
+// That's why frontdex does not use OIDC discovery; it constructs the required endpoints itself and
+// talks directly to Dex (which must be reachable from the application server). By default, frontdex
+// assumes Dex is at http://localhost:5556; if Dex runs elsewhere, use [WithEndpointURL] to set
+// the correct Dex base URL.
 //
-// If an error occurs during the authentication process, the handler stores the error
-// in the request context. You can retrieve it using the [FailureReason] function.
-// Errors are only present in requests handled by the error handler, which can be customized
-// with the [WithErrorHandler] option (recommended).
+// Upon successful authentication, the handler stores the authentication payload in the request context.
+// You can retrieve it using the [Payload] function. The payload is only present in GET /callback requests
+// after successful authentication.
+//
+// If authentication fails, the error is saved in the request context. Access it via [FailureReason] within
+// the error handler; only requests routed to the [ErrorHandler] include this value.
+// You can customize the handler with the [WithErrorHandler] option (recommended).
 //
 // Example usage:
 //
