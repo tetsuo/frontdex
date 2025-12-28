@@ -32,15 +32,12 @@ const (
 	// stateAge sets the default lifetime for state tokens.
 	// Defaults to 24 hours as per Dex defaults (AuthRequestsValidFor).
 	stateAge = 86400
-
 	// tokenTTL sets the default ID token lifetime expected from Dex.
 	// Defaults to 24 hours as per Dex defaults (IDTokensValidFor).
 	tokenTTL = time.Hour * 24
-
 	// clientRemoteIPHeader sets the default forwarded header.
 	// Must match with the clientRemoteIP.header value set on Dex.
 	clientRemoteIPHeader string = "X-Forwarded-For"
-
 	// callbackPath sets the default OAuth2 callback path.
 	// Must match with connector redirect URIs configured on Dex.
 	callbackPath string = "/callback"
@@ -50,10 +47,8 @@ const (
 const (
 	// stateCookieName sets the default state token cookie name.
 	stateCookieName string = "_fdx.state"
-
 	// connectorFieldName sets the default query/form field name for the connector ID.
 	connectorFieldName string = "via"
-
 	// clientTimeout sets the default HTTP client timeout value for Dex requests.
 	clientTimeout time.Duration = time.Second * 30
 )
@@ -126,20 +121,15 @@ type Connector = dex.Connector
 var (
 	// ErrNoState is returned when the OAuth2 state parameter is missing from the callback request.
 	ErrNoState = errors.New("state missing")
-
 	// ErrBadError is returned when an unrecognized error was returned in the OAuth2 callback.
 	ErrBadError = errors.New("bad error")
-
 	// ErrMissingStateToken is returned when the state token cookie is missing from the request.
 	ErrMissingStateToken = errors.New("state token missing")
-
 	// ErrBadStateToken is returned when the state token is invalid, tampered, or expired.
 	ErrBadStateToken = errors.New("bad state token")
-
 	// ErrAccessDenied is returned when the OAuth provider returns an "access_denied" or "unverified_user_email" error.
 	// access_denied is standard, unverified_user_email is used by some providers like GitHub.
 	ErrAccessDenied = errors.New("access denied")
-
 	// ErrStateMismatch is returned when the state parameter in the callback doesn't match the initial state,
 	// the value stored in the state token.
 	ErrStateMismatch = errors.New("state mismatch")
@@ -149,16 +139,12 @@ var (
 var (
 	// ErrBadConnector is returned when the connector field (via) in the request is invalid or not supported.
 	ErrBadConnector = dex.ErrInvalidConnector
-
 	// ErrResourceUnavailable is returned when a required resource (state) is not found on Dex.
 	ErrResourceUnavailable = dex.ErrResourceUnavailable
-
 	// ErrAuthFailure is returned when authentication failed at the Dex server.
 	ErrAuthFailure = dex.ErrAuthFailure
-
 	// ErrTimeout is returned when a request to Dex times out.
 	ErrTimeout = dex.ErrTimeout
-
 	// ErrNetwork is returned when a network error occurs while communicating with Dex.
 	ErrNetwork = dex.ErrNetwork
 )
@@ -201,9 +187,42 @@ func (cf *cookieFactory) newCookie(b []byte) *http.Cookie {
 	}
 }
 
-// New returns a middleware that wraps an HTTP handler and intercepts
-// POST requests to "/" for initiating OAuth2 redirects and GET requests to the callback path.
-// for processing OAuth2 callbacks.
+// New creates an [http.Handler] that performs OAuth2/OIDC authentication using Dex
+// as the identity provider. It intercepts requests to / and /callback paths to handle redirect
+// and callback flows, respectively. Other requests are passed to the provided handler h.
+// You should ideally mount this under a specific path, e.g., /login/.
+//
+// The issuerURL, clientID, and clientSecret parameters are used to configure the OAuth2 client
+// and must match the values registered in the Dex server. Additional options and a Dex
+// endpoint URL can be provided after the required parameters.
+//
+// Upon successful authentication, the handler stores the authentication payload in the request
+// context, which can be retrieved using the [Payload] function. A payload is only present
+// in GET /callback requests after successful authentication.
+//
+// If an error occurs during the authentication process, the handler stores the error
+// in the request context. You can retrieve it using the [FailureReason] function.
+// Errors are only present in requests handled by the error handler, which can be customized
+// with the [WithErrorHandler] option (recommended).
+//
+// Example usage:
+//
+//	import "github.com/tetsuo/frontdex"
+//
+//	fdx := frontdex.New(
+//	  "https://example.com/login",             // issuer URL
+//	  "example-client",                        // client ID
+//	  "change-me-in-production",               // client secret
+//	  frontdex.WithLoginHandler(loginHandler), // custom login page
+//	)
+//	http.ListenAndServe(":8080", http.StripPrefix("/login", fdx(
+//	  http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//	    if payload := frontdex.Payload(r); payload != nil {
+//	      w.Header().Set("Content-Type", "application/json")
+//	      _ = json.NewEncoder(w).Encode(payload)
+//	    }
+//	  }),
+//	)))
 func New(issuerURL, clientID, clientSecret string, opts ...Option) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		fdx := parseOptions(h, issuerURL, opts...)
