@@ -362,7 +362,7 @@ func Payload(r *http.Request) *dex.Payload {
 // for use in HTTP responses. Returns 400, 403, or 500 depending on the error type.
 func StatusCodeFromError(err error) int {
 	switch err {
-	case ErrNoState, ErrBadError, ErrMissingStateToken, ErrBadStateToken:
+	case ErrNoState, ErrBadError, ErrMissingStateToken:
 		return http.StatusBadRequest
 	case ErrAccessDenied, ErrStateMismatch:
 		return http.StatusForbidden
@@ -371,7 +371,8 @@ func StatusCodeFromError(err error) int {
 	}
 	// Handle wrapped API errors
 	if errors.Is(err, ErrResourceUnavailable) ||
-		errors.Is(err, ErrBadConnector) {
+		errors.Is(err, ErrBadConnector) ||
+		errors.Is(err, ErrBadStateToken) {
 		return http.StatusBadRequest
 	}
 	if errors.Is(err, ErrAuthFailure) {
