@@ -5,7 +5,7 @@ OAuth2/OIDC middleware that fronts [Dex](https://dexidp.io/)
 [![Go Reference](https://pkg.go.dev/badge/github.com/tetsuo/frontdex.svg)](https://pkg.go.dev/github.com/tetsuo/frontdex)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tetsuo/frontdex)](https://goreportcard.com/report/github.com/tetsuo/frontdex)
 
-frontdex provides OAuth2/OIDC authentication middleware for applications using [Dex](https://dexidp.io/) as the identity provider. It handles the [authorization code flow](https://oauth.net/2/grant-types/authorization-code/) (with [PKCE](https://oauth.net/2/pkce/)) on behalf of your application and stores a payload in the request context containing tokens and user info for further processing. It is intended for scenarios where you want to deploy Dex internally and expose it to end users only through your application.
+frontdex provides OAuth2/OIDC authentication middleware for applications using [Dex](https://dexidp.io/) as the identity provider. It handles the [authorization code flow](https://oauth.net/2/grant-types/authorization-code/) (with [PKCE](https://oauth.net/2/pkce/)) on behalf of your application and stores a payload in the request context containing tokens and user info for further processing.
 
 ## Quickstart
 
