@@ -155,6 +155,12 @@ var (
 
 	// ErrAuthFailure is returned when authentication failed at the Dex server.
 	ErrAuthFailure = dex.ErrAuthFailure
+
+	// ErrTimeout is returned when a request to Dex times out.
+	ErrTimeout = dex.ErrTimeout
+
+	// ErrNetwork is returned when a network error occurs while communicating with Dex.
+	ErrNetwork = dex.ErrNetwork
 )
 
 // SameSiteMode represents the SameSite cookie attribute modes.
@@ -333,6 +339,8 @@ func StatusCodeFromError(err error) int {
 		return http.StatusBadRequest
 	case ErrAccessDenied, ErrStateMismatch:
 		return http.StatusForbidden
+	case ErrTimeout:
+		return http.StatusGatewayTimeout
 	}
 	// Handle wrapped API errors
 	if errors.Is(err, ErrResourceUnavailable) ||
