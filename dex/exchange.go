@@ -15,18 +15,21 @@ type ExchangeRequest struct {
 }
 
 // Claims contains the user's identity and profile information from Dex.
+// See: https://dexidp.io/docs/configuration/custom-scopes-claims-clients/
 type Claims struct {
+	FederatedClaims   FederatedClaims `json:"federated_claims"`   // Federated claims
+	Groups            []string        `json:"groups"`             // User groups
 	Subject           string          `json:"sub"`                // Unique user ID
 	Name              string          `json:"name"`               // Full name
 	Email             string          `json:"email"`              // Email address
-	EmailVerified     bool            `json:"email_verified"`     // Whether email is verified
 	PreferredUsername string          `json:"preferred_username"` // Username
-	FederatedClaims   FederatedClaims `json:"federated_claims"`   // Federated claims
+	OfflineAccess     bool            `json:"offline_access"`     // Whether offline access is granted
+	EmailVerified     bool            `json:"email_verified"`     // Whether email is verified
 }
 
 // FederatedClaims contains the user's identity and profile information from upstream IdP.
 type FederatedClaims struct {
-	Connector Connector `json:"connector_id"` // Which connector was used
+	Connector Connector `json:"connector_id"` // Which connector was used (e.g., google, github)
 	UserID    string    `json:"user_id"`      // Connector-specific user ID
 }
 
@@ -66,7 +69,7 @@ func (dex *Dex) ExchangeCodeForToken(ctx context.Context, params *ExchangeReques
 		return nil, fmt.Errorf("verify access token: %v", err)
 	}
 
-	// Decode common user claims.
+	// Decode Dex supported claims.
 	var claims Claims
 	if err := idToken.Claims(&claims); err != nil {
 		return nil, fmt.Errorf("parse claims: %v", err)
