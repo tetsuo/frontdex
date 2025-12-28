@@ -1,5 +1,5 @@
-// Package frontdex provides OAuth2/OIDC authentication middleware that integrates
-// with Dex and handles the authorization code flow.
+// Package frontdex provides OAuth2/OIDC authentication middleware for applications using
+// Dex as the identity provider and supports the authorization code flow.
 package frontdex
 
 import (
