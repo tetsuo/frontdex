@@ -79,7 +79,7 @@ Install:
 go get github.com/tetsuo/frontdex
 ```
 
-By default, frontdex fronts the Dex instance running at `localhost:5556`. You can configure it to point elsewhere using the `WithEndpointURL()` option.
+By default, frontdex connects the Dex instance running at `localhost:5556`. You can configure it to point elsewhere using the [`WithEndpointURL()`](https://pkg.go.dev/github.com/tetsuo/frontdex#WithEndpointURL) option.
 
 > 📄 **See the API documentation at [pkg.go.dev](https://pkg.go.dev/github.com/tetsuo/frontdex) for all available options.**
 
