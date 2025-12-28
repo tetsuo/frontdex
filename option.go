@@ -26,7 +26,7 @@ type Option func(*frontdex)
 // WithEndpointURL sets the base URL for the Dex server and configures the OAuth2 endpoints
 // (auth, token), JWKS (keys), and userinfo URLs accordingly. Note that frontdex doesn't use
 // the discovery protocol to obtain these URLs.
-// Defaults to the development endpoint (http://localhost:5556).
+// Defaults to http://localhost:5556.
 func WithEndpointURL(endpoint string) Option {
 	return func(fdx *frontdex) {
 		fdx.opts.OAuth2Config.Endpoint = oauth2.Endpoint{
@@ -252,7 +252,8 @@ func WithErrorHandler(h http.Handler) Option {
 
 // WithRedirectHandler overrides the default redirect handler.
 // By default, the handler sets the state token cookie and redirects to the authorization URL.
-// For custom behavior, implement your own handler.
+// For custom behavior, implement your own handler (recommended for validating auth URLs
+// or adding additional security checks).
 //
 // You can access the state token and authorization URL using [StateToken] and [AuthorizationURL].
 // The default handler logic is as follows:
@@ -283,6 +284,9 @@ func WithRedirectHandler(h http.Handler) Option {
 
 // WithLoginHandler overrides the default login page handler.
 // By default, a simple HTML page with buttons for each available connector is served.
+// The form fields use the configured connector field name (default: "via"). If you
+// implement a custom login page (which you should), ensure that the form field names
+// match, or adjust the connector field name using [WithConnectorFieldName].
 func WithLoginHandler(h http.Handler) Option {
 	return func(fdx *frontdex) {
 		fdx.opts.LoginHandler = h
