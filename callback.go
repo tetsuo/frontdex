@@ -13,7 +13,7 @@ import (
 // handleCallback completes the login process after the user returns from the identity provider.
 // It checks for errors, validates the state, decrypts the login info from the cookie,
 // and exchanges the code for a user token.
-func (fdx *frontdex) handleCallback(r *http.Request) (*dex.Payload, error) {
+func (fdx *frontdex) handleCallback(r *http.Request) (*dex.TokenResponse, error) {
 	query := r.URL.Query()
 
 	// All flows require a 'state' param
@@ -84,30 +84,30 @@ func (fdx *frontdex) handleCallback(r *http.Request) (*dex.Payload, error) {
 		Verifier: secret[nonceEnd:verifierEnd],
 	}
 
-	payload, err := fdx.dex.ExchangeCodeForToken(r.Context(), exchangeReq)
+	tokenResp, err := fdx.dex.ExchangeCodeForToken(r.Context(), exchangeReq)
 	if err != nil {
 		return nil, fmt.Errorf("exchange code: %v", err)
 	}
 
 	// Ensure nonce values match.
-	if !equalStringBytes(payload.IDToken.Nonce, secret[stateEnd:nonceEnd]) {
-		return nil, fmt.Errorf("nonce mismatch: want %s, got %s", string(secret[stateEnd:nonceEnd]), payload.IDToken.Nonce)
+	if !equalStringBytes(tokenResp.IDToken.Nonce, secret[stateEnd:nonceEnd]) {
+		return nil, fmt.Errorf("nonce mismatch: want %s, got %s", string(secret[stateEnd:nonceEnd]), tokenResp.IDToken.Nonce)
 	}
 
 	// Check token lifetime.
 	expectedTTL := fdx.opts.TokenTTL
 
-	expiresIn, ok := payload.Token.Extra("expires_in").(float64)
+	expiresIn, ok := tokenResp.Token.Extra("expires_in").(float64)
 	if !ok || expiresIn < 1 || expiresIn > expectedTTL.Seconds()+1 {
 		return nil, fmt.Errorf("'expires_in' out of range: want shorter duration than %.1fs, got %.1fs", expectedTTL.Seconds()+1, expiresIn)
 	}
 
-	lifetime := payload.IDToken.Expiry.Sub(payload.IDToken.IssuedAt)
+	lifetime := tokenResp.IDToken.Expiry.Sub(tokenResp.IDToken.IssuedAt)
 	if lifetime > expectedTTL+time.Second || lifetime < time.Second {
 		return nil, fmt.Errorf("'invalid ID token lifetime: want shorter duration than %.1fs, got %.1fs", expectedTTL.Seconds(), lifetime.Seconds())
 	}
 
-	return payload, nil
+	return tokenResp, nil
 }
 
 var oauthErrors = map[string]error{

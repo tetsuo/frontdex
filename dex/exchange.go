@@ -33,16 +33,16 @@ type FederatedClaims struct {
 	UserID    string    `json:"user_id"`      // Connector-specific user ID
 }
 
-// Payload contains the tokens and claims returned from Dex after exchanging the code.
-type Payload struct {
+// TokenResponse contains the tokens and claims returned from Dex after exchanging the code.
+type TokenResponse struct {
 	Token   *oauth2.Token // OAuth2 token
 	IDToken *oidc.IDToken // ID token (JWT)
-	Claims  *Claims       // Decoded user claims
+	Claims  *Claims       // Decoded Dex user claims
 }
 
 // ExchangeCodeForToken exchanges the authorization code for tokens, verifies them,
 // and returns the user's identity information.
-func (dex *Dex) ExchangeCodeForToken(ctx context.Context, params *ExchangeRequest) (*Payload, error) {
+func (dex *Dex) ExchangeCodeForToken(ctx context.Context, params *ExchangeRequest) (*TokenResponse, error) {
 	token, err := dex.oauth2cfg.Exchange(
 		oidc.ClientContext(ctx, dex.c),
 		params.Code, []oauth2.AuthCodeOption{oauth2.VerifierOption(string(params.Verifier))}...,
@@ -75,5 +75,5 @@ func (dex *Dex) ExchangeCodeForToken(ctx context.Context, params *ExchangeReques
 		return nil, fmt.Errorf("parse claims: %v", err)
 	}
 
-	return &Payload{Token: token, IDToken: idToken, Claims: &claims}, nil
+	return &TokenResponse{Token: token, IDToken: idToken, Claims: &claims}, nil
 }

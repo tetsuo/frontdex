@@ -22,8 +22,8 @@ type AuthRequest struct {
 	Via                 Connector // Which connector to use (e.g., google, github)
 }
 
-// GetAuthorizationURL builds and sends an authorization request to the OAuth provider,
-// returning the redirect URL for user login or an error if the request fails.
+// GetAuthorizationURL creates an auth request on Dex and returns the redirect URL
+// for user login, or an error if the request fails.
 func (dex *Dex) GetAuthorizationURL(ctx context.Context, params *AuthRequest) (string, error) {
 	opts := make([]oauth2.AuthCodeOption, 0, 4)
 	if params.Via != "" {

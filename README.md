@@ -105,7 +105,7 @@ func main() {
 
 	http.ListenAndServe(":8080", http.StripPrefix("/login", fdx(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if payload := frontdex.Payload(r); payload != nil {
+			if payload := frontdex.Token(r); payload != nil {
 				// User is logged in at /callback; payload contains the JWT and user info
 				w.Header().Set("Content-Type", "application/json")
 				_ = json.NewEncoder(w).Encode(payload)

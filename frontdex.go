@@ -114,6 +114,16 @@ type frontdex struct {
 
 type contextKey string
 
+// Payload is the authentication payload returned after successful login.
+type Payload struct {
+	AccessToken  string      `json:"access_token"`
+	IDToken      string      `json:"id_token"`
+	TokenType    string      `json:"token_type"`
+	ExpiresIn    int         `json:"expires_in"`
+	RefreshToken string      `json:"refresh_token,omitempty"`
+	Claims       *dex.Claims `json:"claims"`
+}
+
 // Connector represents a Dex connector ID.
 type Connector = dex.Connector
 
@@ -206,7 +216,7 @@ func (cf *cookieFactory) newCookie(b []byte) *http.Cookie {
 // the correct Dex base URL.
 //
 // Upon successful authentication, the handler stores the authentication payload in the request context.
-// You can retrieve it using the [Payload] function. The payload is only present in GET /callback requests
+// You can retrieve it using the [Token] function. The payload is only present in GET /callback requests
 // after successful authentication.
 //
 // If authentication fails, the error is saved in the request context. Access it via [FailureReason] within
@@ -225,7 +235,7 @@ func (cf *cookieFactory) newCookie(b []byte) *http.Cookie {
 //	)
 //	http.ListenAndServe(":8080", http.StripPrefix("/login", fdx(
 //	  http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//	    if payload := frontdex.Payload(r); payload != nil {
+//	    if payload := frontdex.Token(r); payload != nil {
 //	      w.Header().Set("Content-Type", "application/json")
 //	      _ = json.NewEncoder(w).Encode(payload)
 //	    }
@@ -279,8 +289,15 @@ func (fdx *frontdex) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			fdx.opts.LoginHandler.ServeHTTP(w, r)
 			return
 		case callbackPath:
-			if payload, err := fdx.handleCallback(r); err == nil {
-				r = contextSave(r, payloadKey, payload)
+			if tk, err := fdx.handleCallback(r); err == nil {
+				r = contextSave(r, payloadKey, &Payload{
+					AccessToken:  tk.Token.AccessToken,
+					IDToken:      tk.Token.Extra("id_token").(string),
+					TokenType:    tk.Token.TokenType,
+					ExpiresIn:    int(tk.Token.ExpiresIn),
+					RefreshToken: tk.Token.RefreshToken,
+					Claims:       tk.Claims,
+				})
 			} else {
 				r = contextSave(r, errorKey, err)
 				fdx.opts.ErrorHandler.ServeHTTP(w, r)
@@ -352,10 +369,10 @@ func AuthorizationURL(r *http.Request) string {
 	return contextGet[string](r, authURLKey)
 }
 
-// Payload retrieves the authentication payload from the request context.
-// This value is only present after successful authentication.
-func Payload(r *http.Request) *dex.Payload {
-	return contextGet[*dex.Payload](r, payloadKey)
+// Token retrieves the authentication payload from the request context.
+// This value is only present after successful authentication on /callback.
+func Token(r *http.Request) *Payload {
+	return contextGet[*Payload](r, payloadKey)
 }
 
 // StatusCodeFromError maps known authentication and API errors to appropriate HTTP status codes
